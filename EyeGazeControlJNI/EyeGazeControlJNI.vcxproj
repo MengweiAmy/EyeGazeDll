@@ -154,10 +154,12 @@
   <ItemGroup>
     <ClInclude Include="EgWin.h" />
     <ClInclude Include="EyeGazeControlJNI.h" />
-    <ClInclude Include="EyeGazeJNI.h" />
+    <ClInclude Include="eyegaze_jni_EyeGazeJNI.h" />
+    <ClInclude Include="fixfunc.h" />
     <ClInclude Include="jawt_md.h" />
     <ClInclude Include="jni.h" />
     <ClInclude Include="jni_md.h" />
+    <ClInclude Include="lctsupt.h" />
     <ClInclude Include="lctypdef.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -178,7 +180,8 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="EyeGazeControlJNI.cpp" />
-    <ClCompile Include="EyeGazeJni.cpp" />
+    <ClCompile Include="eyegaze_jni_EyeGazeJNI.cpp" />
+    <ClCompile Include="fixfunc.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

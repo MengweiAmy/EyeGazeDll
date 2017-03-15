@@ -39,10 +39,16 @@
     <ClInclude Include="lctypdef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EyeGazeJNI.h">
+    <ClInclude Include="EgWin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EgWin.h">
+    <ClInclude Include="eyegaze_jni_EyeGazeJNI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fixfunc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lctsupt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,7 +62,10 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EyeGazeJni.cpp">
+    <ClCompile Include="eyegaze_jni_EyeGazeJNI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fixfunc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

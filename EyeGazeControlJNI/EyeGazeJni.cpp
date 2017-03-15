@@ -8,6 +8,8 @@ using namespace std;
 
 CEyeGazeControlJNI eyeGaze;
 
+
+
 /*
 * Class:     EyeGazeJNI
 * Method:    EyeGazeInit
@@ -51,14 +53,28 @@ JNIEXPORT jobject JNICALL Java_EyeGazeJNI_getEyeGazeData
 (JNIEnv *env, jobject obj) {
 
 	jclass eyeData = env->FindClass("data/EyeGazeData");
-	_stEgData *data= eyeGaze.getEyeData();
-	cout << data[0].bGazeVectorFound << endl;
+	_stEgData data= eyeGaze.getEyeData();
+	cout << data.bGazeVectorFound << endl;
 
 	jmethodID jeyeData = env->GetMethodID(eyeData, "<init>", "()V");
+	jfieldID jgazeVectorFound = env->GetFieldID(eyeData, "gazeVectorFound", "Z");
 	jfieldID jigaze = env->GetFieldID(eyeData, "iIGaze", "I");
+	jfieldID jjgaze = env->GetFieldID(eyeData, "iJGaze", "I");
+	jfieldID jpupilRadius = env->GetFieldID(eyeData, "pupilRadiusMm", "F");
+	jfieldID jfXEyeballOffsetMm = env->GetFieldID(eyeData, "fXEyeballOffsetMm", "F");
+	jfieldID jfYEyeballOffsetMm = env->GetFieldID(eyeData, "fYEyeballOffsetMm", "F");
+	jfieldID jfoucsRangeOffsetMm = env->GetFieldID(eyeData, "foucsRangeOffsetMm", "F");
+	jfieldID jfLengExtOffsetMm = env->GetFieldID(eyeData, "fLengExtOffsetMm", "F");
 
 	jobject jobjEyeData = env->NewObject(eyeData, jeyeData);
-	env->SetIntField(jobjEyeData, jigaze, data[0].bGazeVectorFound);
+	env->SetIntField(jobjEyeData, jigaze, data.iIGaze);
+	env->SetIntField(jobjEyeData, jjgaze, data.iJGaze);
+	env->SetFloatField(jobjEyeData, jpupilRadius, data.fPupilRadiusMm);
+	env->SetFloatField(jobjEyeData, jfXEyeballOffsetMm, data.fXEyeballOffsetMm);
+	env->SetFloatField(jobjEyeData, jfYEyeballOffsetMm, data.fYEyeballOffsetMm);
+	env->SetFloatField(jobjEyeData, jfoucsRangeOffsetMm, data.fFocusRangeOffsetMm);
+	env->SetFloatField(jobjEyeData, jfLengExtOffsetMm, data.fLensExtOffsetMm);
+
 	return jobjEyeData;
 }
 

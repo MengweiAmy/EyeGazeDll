@@ -12,6 +12,26 @@
 #define EYEGAZECONTROLJNI_API __declspec(dllimport)
 #endif
 
+
+struct _stRawGazepoint        /* data for a single raw gazepoint, i.e. the  */
+							  /*   gazepoint for a single camera sample 	 */
+{
+	int	bGazeTracked;			/* gaze-tracked flag (true or false)			 */
+	int	iXGazeWindowPix;		/* gaze coordinate within window (pixels) 	 */
+	int	iYGazeWindowPix;		/*  "                                         */
+	float fPupilDiamMm;        /* pupil diameter (mm)                        */
+	float fXEyeballMm;         /* x and y eyeball offsets with respect to    */
+	float fYEyeballMm;         /*   the camera axis (mm)                     */
+							   /*   x positive: eye moved to user's right    */
+							   /*   y positive: eye moved up 					 */
+	float fFocusOffsetMm;      /* distance of eye from focus plane (mm)      */
+							   /*   positive: eye farther from camera 		 */
+	float fFocusRangeMm;       /* range from the camera-sensor plane to      */
+							   /*   the focus plane (mm)							 */
+	int   iFixIndex;           /* index of the fixation that this point is   */
+							   /*   in, -1 if not part of a fixation			 */
+};
+
 // This class is exported from the EyeGazeControlJNI.dll
 class EYEGAZECONTROLJNI_API CEyeGazeControlJNI {
 public:
@@ -19,10 +39,25 @@ public:
 	int initDevice();
 	int shutDownDevice();
 	void calibrateDevice();
-	_stEgData* getEyeData();
+	_stRawGazepoint* getEyeData();
 	int startLogging();
 	int stopLogging();
+	_stEgControl getControlData();
+	int egDetectFixtion(int bGazeTracked,float iXGazeWindowPix,
+		float iYGazeWindowPix,
+		float fGazeDeviationThreshPix,
+		int iMinFixSamples,int* bGazepointFoundDelayed,
+		float* fXGazeDelayed, float* fYGazeDelayed,
+		float* fGazeDeviationDelayed,
+		float* fXFixDelayed, float* fYFixDelayed,
+		int* iSaccadeDurationDelayed,
+		int* iFixDurationDelayed);
 	// TODO: add your methods here.
+private:
+	void AddFixation(int *iLastFixCollected, int iFixStartSample,
+		float fXFix, float fYFix,
+		int iSaccadeDuration, int iFixDuration);
+	void WriteTraceDataFile(wchar_t *pchTraceDataFileName);
 };
 
 extern EYEGAZECONTROLJNI_API int nEyeGazeControlJNI;
