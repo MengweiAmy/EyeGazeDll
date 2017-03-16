@@ -43,15 +43,7 @@ public:
 	int startLogging();
 	int stopLogging();
 	_stEgControl getControlData();
-	int egDetectFixtion(int bGazeTracked,float iXGazeWindowPix,
-		float iYGazeWindowPix,
-		float fGazeDeviationThreshPix,
-		int iMinFixSamples,int* bGazepointFoundDelayed,
-		float* fXGazeDelayed, float* fYGazeDelayed,
-		float* fGazeDeviationDelayed,
-		float* fXFixDelayed, float* fYFixDelayed,
-		int* iSaccadeDurationDelayed,
-		int* iFixDurationDelayed);
+	int egDetectFixtion(_stEgData *rawdata,int size);
 	// TODO: add your methods here.
 private:
 	void AddFixation(int *iLastFixCollected, int iFixStartSample,

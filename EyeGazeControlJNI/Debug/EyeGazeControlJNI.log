@@ -1,4 +1,11 @@
-﻿  eyegaze_jni_EyeGazeJNI.cpp
-     Creating library C:\Users\EYEGAZE 2.3 i7\Documents\GitHub\EyeGazeDll\Debug\EyeGazeControlJNI.lib and object C:\Users\EYEGAZE 2.3 i7\Documents\GitHub\EyeGazeDll\Debug\EyeGazeControlJNI.exp
+﻿  EyeGazeControlJNI.cpp
+c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(103): warning C4156: deletion of an array expression without using the array form of 'delete'; array form substituted
+c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(103): warning C4154: deletion of an array expression; conversion to pointer supplied
+c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(104): warning C4156: deletion of an array expression without using the array form of 'delete'; array form substituted
+c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(104): warning C4154: deletion of an array expression; conversion to pointer supplied
+c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(240): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(251): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(298): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(306): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
   EyeGazeControlJNI.vcxproj -> C:\Users\EYEGAZE 2.3 i7\Documents\GitHub\EyeGazeDll\Debug\EyeGazeControlJNI.dll
   EyeGazeControlJNI.vcxproj -> C:\Users\EYEGAZE 2.3 i7\Documents\GitHub\EyeGazeDll\Debug\EyeGazeControlJNI.pdb (Full PDB)

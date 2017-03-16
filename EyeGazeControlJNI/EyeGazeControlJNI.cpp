@@ -89,6 +89,8 @@ int CEyeGazeControlJNI::initDevice()
 	stEgControl.iScreenHeightPix = iScreenHeightPix;
 	stEgControl.iVisionSelect = 0;
 	stEgControl.iCommType = EG_COMM_TYPE_LOCAL;
+	stEgControl.fHorzPixPerMm = 10.246F;
+	stEgControl.iSamplePerSec = 60;
 	int result = EgInit(&stEgControl);
 	stEgControl.bTrackingActive = TRUE;
 	return result;
@@ -98,6 +100,8 @@ int CEyeGazeControlJNI::shutDownDevice()
 {
 	stEgControl.bTrackingActive = FALSE;
 	int result = EgExit(&stEgControl);
+	delete stFixPoint;
+	delete stRawGazepoint;
 	return result;
 }
 
@@ -189,18 +193,29 @@ int CEyeGazeControlJNI::stopLogging()
 	return 0;
 }
 
+/*
+ Return the configuration data defined in the beginning
+*/
 _stEgControl CEyeGazeControlJNI::getControlData()
 {
 	return stEgControl;
 }
 
-int CEyeGazeControlJNI::egDetectFixtion(int bGazeTracked, float iXGazeWindowPix, 
-	float iYGazeWindowPix, float fGazeDeviationThreshPix, int iMinFixSamples, 
-	int *bGazepoint, float *fXGazeD, float *fYGazeD,
-	float *fGazeDeviationD, float *fXFixDe, float *fYFixD, 
-	int *iSaccadeDurationD, int *iFixDurationD)
+int CEyeGazeControlJNI::egDetectFixtion(_stEgData *rawdata,int size)
 {
+	int uiStartCameraFieldCount; /* camera field count at which the gaze-      */
+	float fGazeDeviationThreshPix; /* gaze deviation threshold (pixels)        */
 
+	int iEyeMotionState=0; /* DETECT FIXATION RETURN VALUE:				 */
+						 /*	MOVING				  0						 */
+						 /*		   The eye was in motion iMinFixSamples ago       */
+						 /*	FIXATING 			  1						 */
+						 /*		   The eye was fixating	 iMinFixSamples ago       */
+						 /*	FIXATION_COMPLETED    2						 */
+						 /*			A completed fixation has just been detected;  */
+                         /*           the fixation ended iMinFixSamples ago.           */
+	/*Fixation OUTPUT parameters*/
+	 
 	int   bGazepointFoundDelayed;   /* sample gazepoint-found flag,             */
 									/*   iMinFixSamples ago                     */
 	float fXGazeDelayed;            /* sample gazepoint coordinates,            */
@@ -208,7 +223,6 @@ int CEyeGazeControlJNI::egDetectFixtion(int bGazeTracked, float iXGazeWindowPix,
 	float fGazeDeviationDelayed;    /* deviation of the gaze from the           */
 									/*   present fixation,                      */
 									/*   iMinFixSamples ago                     */
-
 									/* Fixation Data - delayed:                 */
 	float fXFixDelayed;             /* fixation point as estimated              */
 	float fYFixDelayed;             /*   iMinFixSamples ago                     */
@@ -217,27 +231,102 @@ int CEyeGazeControlJNI::egDetectFixtion(int bGazeTracked, float iXGazeWindowPix,
 									/*   (samples)                              */
 	int   iFixDurationDelayed;      /* duration of the present fixation         */
 									/*   (samples) */
-	int iEyeMotionState = DetectFixation(bGazeTracked,iXGazeWindowPix,iYGazeWindowPix,
-		fGazeDeviationThreshPix,
-		iMinFixSamples,
+	int iFixStartSample;
+	stEgControl.fHorzPixPerMm = 10.246F;
+	stEgControl.iSamplePerSec = 60;
+	/* Set the fixation-detection control parameter arguments.						 */
 
-		&bGazepointFoundDelayed,
-		&fXGazeDelayed, &fYGazeDelayed,
-		&fGazeDeviationDelayed,
+	/*The minimum number of gaze samples that can be considered as a fixation*/
+	iMinFixSamples = int(fMinFixMs * stEgControl.iSamplePerSec / 1000.0F);
+	
+	/*Distance that a gazepoint may vary from the average fixation point and still be considered as a part of fixation*/
+	/*Current value is 65; */
+	/*============Will be modified based on the performance===================*/
+	fGazeDeviationThreshPix = fGazeDeviationThreshMm *
+		stEgControl.fHorzPixPerMm;
 
-		&fXFixDelayed, &fYFixDelayed,
-		&iSaccadeDurationDelayed,
-		&iFixDurationDelayed);
 
-	*bGazepoint = bGazepointFoundDelayed;
-	*fXGazeD = fXGazeDelayed;
-	*fYGazeD = fYGazeDelayed;
-	*fGazeDeviationD = fGazeDeviationDelayed;
-	*fXFixDe = fXFixDelayed;
-	*fYFixD = fYFixDelayed;
-	*iSaccadeDurationD = iSaccadeDurationDelayed;
-	*iFixDurationD = iFixDurationDelayed;
+	/*Initialize the fixtion detection function*/
+	iLastFixCollected = -1;
+	InitFixation(iMinFixSamples);
 
+	for (int i = 0; i < size; i++)
+	{
+		_stEgData dat = rawdata[i];
+		/* 	If this is the first data sample in the test run,							 */
+		if (i == 0)
+		{
+			/* 		Save the starting camera field count.										 */
+			uiStartCameraFieldCount = dat.ulCameraFieldCount;
+		}
+
+		/*- - - - - - - - - - - - Store Gazepoint Trace - - - - - - - - - - - - - - */
+		/* 	Record whether the gaze was found.												 */
+		stRawGazepoint[i].bGazeTracked = dat.bGazeVectorFound;
+
+		/* 	Originally assume the point is not associated with a fixation. 		 */
+		stRawGazepoint[i].iFixIndex = -1;
+
+		/*If the gazepoint was tracked this sample, */
+		if (stRawGazepoint[i].bGazeTracked == TRUE)
+		{
+			/* 		Record the raw gazepoint data:												 */
+			stRawGazepoint[i].iXGazeWindowPix = dat.iIGaze - iWindowHorzOffset;
+			stRawGazepoint[i].iYGazeWindowPix = dat.iJGaze - iWindowVertOffset;
+			stRawGazepoint[i].fPupilDiamMm = dat.fPupilRadiusMm * 2;
+			stRawGazepoint[i].fXEyeballMm = dat.fXEyeballOffsetMm;
+			stRawGazepoint[i].fYEyeballMm = dat.fYEyeballOffsetMm;
+			stRawGazepoint[i].fFocusOffsetMm = dat.fLensExtOffsetMm;
+			stRawGazepoint[i].fFocusRangeMm = dat.fFocusRangeOffsetMm;
+		}
+
+		/* - - - - - - - - - - - - - Process Fixations - - - - - - - - - - - - - - -*/
+		/* 	Check for fixations. 																 */
+		iEyeMotionState = DetectFixation(
+			stRawGazepoint[i].bGazeTracked,
+			(float)stRawGazepoint[i].iXGazeWindowPix,
+			(float)stRawGazepoint[i].iYGazeWindowPix,
+			fGazeDeviationThreshPix,
+			iMinFixSamples,
+
+			&bGazepointFoundDelayed,
+			&fXGazeDelayed, &fYGazeDelayed,
+			&fGazeDeviationDelayed,
+
+			&fXFixDelayed, &fYFixDelayed,
+			&iSaccadeDurationDelayed,
+			&iFixDurationDelayed);
+
+		/*  If a completed fixation has just been detected,  */
+		if (iEyeMotionState == FIXATION_COMPLETED)
+		{
+			cout << i << "First detect fixation " << iEyeMotionState << endl;
+			/* 	Compute the starting sample for the fixation. */
+			iFixStartSample = i - (iFixDurationDelayed - 1)
+				- iMinFixSamples;
+			/* 	Store the fixation in the temporary fixation holding array. */
+
+			AddFixation(&iLastFixCollected, iFixStartSample,
+				fXFixDelayed, fYFixDelayed,
+				iSaccadeDurationDelayed, iFixDurationDelayed);
+			/* 	Tag all the raw gazepoints associated with this fixation. */
+			for (int ii = iFixStartSample;
+				ii < iFixStartSample + iFixDurationDelayed; ii++)
+			{
+				stRawGazepoint[ii].iFixIndex = iLastFixCollected;
+				cout << "ii" <<ii << endl;
+			}
+		}
+		/*If the current gaze point is moving,then set the fixation index to -1*/
+		if (iEyeMotionState == MOVING) 
+		{
+			stRawGazepoint[i].iFixIndex = -1;
+		}
+		iLastSampleCollected = i;
+	}
+
+	/* Write the trace data file. 															 */
+	WriteTraceDataFile(TEXT("fixation.dat"));
 	return iEyeMotionState;
 }
 

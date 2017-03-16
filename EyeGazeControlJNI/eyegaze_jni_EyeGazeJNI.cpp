@@ -8,12 +8,7 @@ using namespace std;
 
 CEyeGazeControlJNI eyeGaze;
 
-float fMinFixtionMs = 100.0F;
-float fGazeDeviationThreshPix;
-int   iMinFixSamples;
-float fGazeDeviatThreshPix = 6.35F;
-
-int bGazepointFoundDelayed;
+_stEgData stLogGazepoint[5000];
 
 /*
 * Class:     eyegaze_jni_EyeGazeJNI
@@ -120,83 +115,85 @@ JNIEXPORT jint JNICALL Java_eyegaze_jni_EyeGazeJNI_EyeGazeLogStop
 
 /*
 * Class:     eyegaze_jni_EyeGazeJNI
-* Method:    verifyFixtion
-* Signature: (Leyegaze/jni/EyeGazeData;)Leyegaze/jni/FixtionData;
+* Method:    VerifyFixation
+* Signature: ([Leyegaze/jni/EyeGazeData;)I
 */
-JNIEXPORT jobject JNICALL Java_eyegaze_jni_EyeGazeJNI_verifyFixtion
-(JNIEnv *env, jobject, jobject eg_data) {
+JNIEXPORT jint JNICALL Java_eyegaze_jni_EyeGazeJNI_VerifyFixation
+(JNIEnv *env, jobject, jobjectArray eye_gazeData)
+{
+	/*TODO Analysis eyegaze data to get fixtion information
+	*/
+	cout << "enter jni function successfully......." << endl;
+	if (eye_gazeData != NULL)
+	{
+		int size = env->GetArrayLength(eye_gazeData);
+		//cout << "eye_gazeData size:" <<size << endl;
+		//int fixtionResult = eyeGaze.egDetectFixtion(stRawGazepoint);
+		for (int i = 0; i < size; i++)
+		{
+			jobject job_egData = (jobject)env->GetObjectArrayElement(eye_gazeData, i);
+			if (job_egData != NULL)
+			{
+				jclass jcls_egdata = env->GetObjectClass(job_egData);
+				if (i == 0)
+				{
+					//jfieldID jfid_cameraFil = env->GetFieldID(jcls_egdata, "cameraFieldCount", "L");
+					/* 		Save the starting camera field count.										 */
+					//stLogGazepoint[i].ulCameraFieldCount = env->GetIntField(job_egData, jfid_cameraFil);
+				}
 
-	int   bGazepointFoundDelayed;   /* sample gazepoint-found flag,             */
-									/*   iMinFixSamples ago                     */
-	float fXGazeDelayed;            /* sample gazepoint coordinates,            */
-	float fYGazeDelayed;            /*   iMinFixSamples ago                     */
-	float fGazeDeviationDelayed;    /* deviation of the gaze from the           */
-									/*   present fixation,                      */
-									/*   iMinFixSamples ago                     */
+				/* Get gaze vector found parameter*/
+				jfieldID jfid_gazeFound = env->GetFieldID(jcls_egdata, "gazeVectorFound", "I");
+				int iGazeFound = env->GetIntField(job_egData, jfid_gazeFound);
+				stLogGazepoint[i].bGazeVectorFound = iGazeFound;
 
-									/* Fixation Data - delayed:                 */
-	float fXFixDelayed;             /* fixation point as estimated              */
-	float fYFixDelayed;             /*   iMinFixSamples ago                     */
-	int   iSaccadeDurationDelayed;  /* duration of the saccade                  */
-									/*   preceeding the preset fixation         */
-									/*   (samples)                              */
-	int   iFixDurationDelayed;      /* duration of the present fixation         */
-									/*   (samples) */
+				/* Get iIGaze parameter*/
+				jfieldID jfid_iXgaze = env->GetFieldID(jcls_egdata, "iIGaze", "I");
+				int iXGazePix = env->GetIntField(job_egData, jfid_iXgaze);
+				stLogGazepoint[i].iIGaze = iXGazePix;
 
-	/* Set the fixation-detection control parameter arguments.						 */
-	iMinFixSamples = int(fMinFixtionMs * eyeGaze.getControlData().iSamplePerSec / 1000.0F);
-	cout << "iMinFixSamples," << iMinFixSamples << endl;
-	fGazeDeviatThreshPix = fGazeDeviatThreshPix *
-		eyeGaze.getControlData().fHorzPixPerMm;
-	cout << "fGazeDeviationThreshPix" << fGazeDeviationThreshPix << endl;
+				/* Get iJGaze parameter*/
+				jfieldID jfid_iJgaze = env->GetFieldID(jcls_egdata, "iJGaze", "I");
+				int iJGazePix = env->GetIntField(job_egData, jfid_iJgaze);
+				stLogGazepoint[i].iJGaze = iJGazePix;
 
-	jclass jclseg_data = env->GetObjectClass(eg_data);
+				/* Get pupilRadiusMm parameter*/
+				jfieldID jfid_pupilradius = env->GetFieldID(jcls_egdata, "pupilRadiusMm", "F");
+				float fpupilradiu = env->GetFloatField(job_egData, jfid_pupilradius);
+				stLogGazepoint[i].fPupilRadiusMm = fpupilradiu;
 
-	jfieldID jbGazeTracked = env->GetFieldID(jclseg_data, "gazeVectorFound", "I");
-	jint iGazeTracked = env->GetIntField(eg_data, jbGazeTracked);
+				/* Get fXEyeballOffsetMm parameter*/
+				jfieldID jfid_fxEyeballoff = env->GetFieldID(jcls_egdata, "fXEyeballOffsetMm", "F");
+				float fXEyeBall = env->GetFloatField(job_egData, jfid_fxEyeballoff);
+				stLogGazepoint[i].fXEyeballOffsetMm = fXEyeBall;
 
-	jfieldID jixGaze = env->GetFieldID(jclseg_data, "iIGaze", "I");
-	jint iXGaze = env->GetIntField(eg_data, jixGaze);
+				/* Get fYEyeballOffsetMm parameter*/
+				jfieldID jfid_fyEyeballoff = env->GetFieldID(jcls_egdata, "fYEyeballOffsetMm", "F");
+				float fYEyeBall = env->GetFloatField(job_egData, jfid_fyEyeballoff);
+				stLogGazepoint[i].fYEyeballOffsetMm = fYEyeBall;
 
-	jfieldID jiyGaze = env->GetFieldID(jclseg_data, "iJGaze", "I");
-	jint iYGaze = env->GetIntField(eg_data, jiyGaze);
+				/* Get fLengExtOffsetMm parameter*/
+				jfieldID jfid_fLengExtOffset = env->GetFieldID(jcls_egdata, "fLengExtOffsetMm", "F");
+				float fYLengExt = env->GetFloatField(job_egData, jfid_fLengExtOffset);
+				stLogGazepoint[i].fLensExtOffsetMm = fYLengExt;
 
-	/* 		Keep the DetectFixation() function up to date.							 */
-	int iEyeMotionState = eyeGaze.egDetectFixtion(
-		iGazeTracked,
-		(float)iXGaze,
-		(float)iYGaze,
-		fGazeDeviationThreshPix,
-		iMinFixSamples,&bGazepointFoundDelayed,
-		&fXGazeDelayed, &fYGazeDelayed,
-		&fGazeDeviationDelayed,
+				/* Get foucsRangeOffsetMm parameter*/
+				jfieldID jfid_fLengRangOffset = env->GetFieldID(jcls_egdata, "foucsRangeOffsetMm", "F");
+				float fYRangeoff = env->GetFloatField(job_egData, jfid_fLengRangOffset);
+				stLogGazepoint[i].fFocusRangeOffsetMm = fYRangeoff;
 
-		&fXFixDelayed, &fYFixDelayed,
-		&iSaccadeDurationDelayed,
-		&iFixDurationDelayed);
-
-	jclass fixData = env->FindClass("eyegaze/jni/FixtionData");
-
-	jmethodID jOFixData = env->GetMethodID(fixData, "<init>", "()V");
-	jfieldID jgazeVectorFound = env->GetFieldID(fixData, "gazePointFoundDelayed", "I");
-	jfieldID jigaze = env->GetFieldID(fixData, "xGazeDelayed", "F");
-	jfieldID jjgaze = env->GetFieldID(fixData, "yGazeDelayed", "F");
-	jfieldID jgazeDeviationDel = env->GetFieldID(fixData, "gazeDeviationDelayed", "F");
-	jfieldID jxFixDelayed = env->GetFieldID(fixData, "xFixDelayed", "F");
-	jfieldID jyFixDelayed = env->GetFieldID(fixData, "yFixDelayed", "F");
-	jfieldID jiSaccadeDurationDelayed = env->GetFieldID(fixData, "iSaccadeDurationDelayed", "I");
-	jfieldID jiFixDurationDelayed = env->GetFieldID(fixData, "iFixDurationDelayed", "I");
-
-	jobject jobjFixData = env->NewObject(fixData, jOFixData);
-	env->SetIntField(jobjFixData, jgazeVectorFound, bGazepointFoundDelayed);
-	env->SetFloatField(jobjFixData, jigaze, fXGazeDelayed);
-	env->SetFloatField(jobjFixData, jjgaze, fYGazeDelayed);
-	env->SetFloatField(jobjFixData, jgazeDeviationDel, fGazeDeviationDelayed);
-	env->SetFloatField(jobjFixData, jxFixDelayed, fXFixDelayed);
-	env->SetFloatField(jobjFixData, jyFixDelayed, fYFixDelayed);
-	env->SetIntField(jobjFixData, jiSaccadeDurationDelayed, iSaccadeDurationDelayed);
-	env->SetIntField(jobjFixData, jiFixDurationDelayed, iFixDurationDelayed);
-
-	return jobjFixData;
+				//cout << i << "get rawpoint data bGazeVectorFound" << stRawGazepoint[i].bGazeVectorFound << endl;
+				//cout << i << "get rawpoint data iIGaze" << stRawGazepoint[i].iIGaze << endl;
+				//cout << i << "get rawpoint data iJGaze" << stRawGazepoint[i].iJGaze << endl;
+				//cout << i << "get rawpoint data fPupilRadiusMm" << stRawGazepoint[i].fPupilRadiusMm << endl;
+				//cout << i << "get rawpoint data fXEyeBall" << stRawGazepoint[i].fXEyeballOffsetMm << endl;
+				//cout << i << "get rawpoint data fYEyeBall" << stRawGazepoint[i].fYEyeballOffsetMm << endl;
+			}
+		}
+		int fixtionResult = eyeGaze.egDetectFixtion(stLogGazepoint,size);
+		//delete[] stRawGazepoint;
+		return fixtionResult;
+	}
+	return 0;
 }
 
