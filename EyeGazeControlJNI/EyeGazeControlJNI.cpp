@@ -100,8 +100,6 @@ int CEyeGazeControlJNI::shutDownDevice()
 {
 	stEgControl.bTrackingActive = FALSE;
 	int result = EgExit(&stEgControl);
-	delete stFixPoint;
-	delete stRawGazepoint;
 	return result;
 }
 
@@ -355,6 +353,7 @@ void CEyeGazeControlJNI::AddFixation(int * iLastFixCollected, int iFixStartSampl
 void CEyeGazeControlJNI::WriteTraceDataFile(wchar_t * pchTraceDataFileName)
 {
 	FILE *fp_trace_file; 			  /* trace data output file					 */
+	FILE *fp_fixation_file; 			  /* fixation index data output file					 */
 	time_t  lTime;
 	struct  tm	tmToday;
 	wchar_t date_string[21];        /* string for today's date               */
@@ -382,29 +381,19 @@ void CEyeGazeControlJNI::WriteTraceDataFile(wchar_t * pchTraceDataFileName)
 		tmToday.tm_min,
 		tmToday.tm_sec);
 
-	/* Write a header line for the file.													 */
-	fwprintf(fp_trace_file, TEXT("Gazepoint Trace Data File,  %s  %s\n"),
-		time_string, date_string);
-
-	/* Record the scene type for which the trace was collected. 					 */
-	fwprintf(fp_trace_file, TEXT("Scene Type: "));
-	fwprintf(fp_trace_file, TEXT("text %i %i"),
-		iScreenWidthPix, iScreenHeightPix);
-	fwprintf(fp_trace_file, TEXT("\n"));
-
 	/* - - - - - - - - - - - Write Raw Gazepoint Trace - - - - - - - - - - - - -*/
 	/* Write the header data for the columns. 											 */
+	/*fwprintf(fp_trace_file,
+		TEXT("samp  Eye     Gazepoint  Pupil   Eyeball-Position  Focus   Fix\n")); */
 	fwprintf(fp_trace_file,
-		TEXT("samp  Eye     Gazepoint  Pupil   Eyeball-Position  Focus   Fix\n"));
-	fwprintf(fp_trace_file,
-		TEXT("indx Found    X      Y    Diam     X     Y     Z   Range  Indx\n"));
-	fwprintf(fp_trace_file,
-		TEXT("     (t/f)  (pix)  (pix)  (mm)   (mm)  (mm)  (mm)   (mm)      \n\n"));
+		TEXT("sampindx  EyeFound   XPos   YPos   PupilDiam   EyeX   EyeY  EyeZ  FoucsRange  FixIndx\n"));
+	/*fwprintf(fp_trace_file,
+		TEXT("     (t/f)  (pix)  (pix)  (mm)   (mm)  (mm)  (mm)   (mm)      \n\n"));*/
 
 	/* Print the raw data for the gazepoint sample. 									 */
 	for (i = 0; i <= iLastSampleCollected; i++)
 	{
-		fwprintf(fp_trace_file, TEXT("%3i %5i %6i %6i %6.2f %6.1f %5.1f %5.1f %7.1f %4i\n"),
+		fwprintf(fp_trace_file, TEXT("%6i %10i %8i %6i %6.2f %6.1f %5.1f %5.1f %7.1f %4i\n"),
 			i,
 			stRawGazepoint[i].bGazeTracked,
 			stRawGazepoint[i].iXGazeWindowPix,
@@ -417,19 +406,21 @@ void CEyeGazeControlJNI::WriteTraceDataFile(wchar_t * pchTraceDataFileName)
 			stRawGazepoint[i].iFixIndex);
 	}
 
+	/* Open the trace file for writing. 													 */
+	_wfopen_s(&fp_fixation_file, TEXT("fixtionIndex.dat"), TEXT("w"));
 	/* - - - - - - - - - - - - Write Fixation Trace - - - - - - - - - - - - - - */
 	/* Write the header data for the columns. 											 */
-	fwprintf(fp_trace_file,
-		TEXT(" fix    Fixation     Sac   Fix   Fix \n"));
-	fwprintf(fp_trace_file,
-		TEXT("indx    X      Y     Dur   Dur  Start\n"));
-	fwprintf(fp_trace_file,
-		TEXT("      (pix)  (pix)  (cnt) (cnt)  Samp\n\n"));
+	/* fwprintf(fp_trace_file,
+		TEXT(" fix    Fixation     Sac   Fix   Fix \n"));*/
+	fwprintf(fp_fixation_file,
+		TEXT("fixindx    X     Y     SacDur  FixDur  FixStart\n"));
+	/* fwprintf(fp_trace_file,
+		TEXT("      (pix)  (pix)  (cnt) (cnt)  Samp\n\n"));*/
 
 	/* Print the fixation data points.														 */
 	for (i = 0; i <= iLastFixCollected; i++)
 	{
-		fwprintf(fp_trace_file, TEXT("%3i %6i %6i %5i %6i %6i\n"),
+		fwprintf(fp_fixation_file, TEXT("%3i %6i %6i %5i %6i %6i\n"),
 			i,
 			stFixPoint[i].iXFixPix,
 			stFixPoint[i].iYFixPix,
@@ -442,4 +433,6 @@ void CEyeGazeControlJNI::WriteTraceDataFile(wchar_t * pchTraceDataFileName)
 
 	/* Close the trace data file. 															 */
 	fclose(fp_trace_file);
+	/* Close the trace data file. 															 */
+	fclose(fp_fixation_file);
 }
