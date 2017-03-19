@@ -9,7 +9,10 @@ using namespace std;
 CEyeGazeControlJNI eyeGaze;
 
 _stEgData stLogGazepoint[5000];
-int i = 0;
+int i = 0;// calulate the size of eyegaze data when receive gaze data
+
+//The sign that stop call EgGetData function
+bool isStopCollectData = FALSE;
 
 /*
 * Class:     eyegaze_jni_EyeGazeJNI
@@ -77,8 +80,8 @@ JNIEXPORT jobject JNICALL Java_eyegaze_jni_EyeGazeJNI_getEyeGazeData
 		cerr << "ERROR: method it receivegazedaata not found !" << endl;
 	}
 	else {
-		cout << "Class MyTest found" << endl;
 		while (i < 36000) {
+
 			jmethodID jeyeData = env->GetMethodID(jclseyeData, "<init>", "()V");
 			jfieldID jgazeVectorFound = env->GetFieldID(jclseyeData, "gazeVectorFound", "Z");
 			jfieldID jigaze = env->GetFieldID(jclseyeData, "iIGaze", "I");
@@ -89,27 +92,23 @@ JNIEXPORT jobject JNICALL Java_eyegaze_jni_EyeGazeJNI_getEyeGazeData
 			jfieldID jfoucsRangeOffsetMm = env->GetFieldID(jclseyeData, "foucsRangeOffsetMm", "F");
 			jfieldID jfLengExtOffsetMm = env->GetFieldID(jclseyeData, "fLengExtOffsetMm", "F");
 
-			//_stEgData data = eyeGaze.getEyeData();
+			_stEgData data = eyeGaze.getEyeData();
 
 			jobject jobjEyeData = env->NewObject(jclseyeData, jeyeData);
-			//env->SetIntField(jobjEyeData, jigaze, data.iIGaze);
-			//env->SetIntField(jobjEyeData, jjgaze, data.iJGaze);
-			//env->SetFloatField(jobjEyeData, jpupilRadius, data.fPupilRadiusMm);
-			//env->SetFloatField(jobjEyeData, jfXEyeballOffsetMm, data.fXEyeballOffsetMm);
-			//env->SetFloatField(jobjEyeData, jfYEyeballOffsetMm, data.fYEyeballOffsetMm);
-			//env->SetFloatField(jobjEyeData, jfoucsRangeOffsetMm, data.fFocusRangeOffsetMm);
-			//env->SetFloatField(jobjEyeData, jfLengExtOffsetMm, data.fFocusRangeOffsetMm);
-
-			env->SetIntField(jobjEyeData, jigaze, 100);
-			env->SetIntField(jobjEyeData, jjgaze, 500);
-			env->SetFloatField(jobjEyeData, jpupilRadius, 3.16F);
-			env->SetFloatField(jobjEyeData, jfXEyeballOffsetMm, -1.6F);
-			env->SetFloatField(jobjEyeData, jfYEyeballOffsetMm, 11.1F);
-			env->SetFloatField(jobjEyeData, jfoucsRangeOffsetMm, 683.3F);
-			env->SetFloatField(jobjEyeData, jfLengExtOffsetMm, 0.0F);
+			env->SetIntField(jobjEyeData, jigaze, data.iIGaze);
+			env->SetIntField(jobjEyeData, jjgaze, data.iJGaze);
+			env->SetFloatField(jobjEyeData, jpupilRadius, data.fPupilRadiusMm);
+			env->SetFloatField(jobjEyeData, jfXEyeballOffsetMm, data.fXEyeballOffsetMm);
+			env->SetFloatField(jobjEyeData, jfYEyeballOffsetMm, data.fYEyeballOffsetMm);
+			env->SetFloatField(jobjEyeData, jfoucsRangeOffsetMm, data.fFocusRangeOffsetMm);
+			env->SetFloatField(jobjEyeData, jfLengExtOffsetMm, data.fFocusRangeOffsetMm);
 
 			env->CallStaticVoidMethod(jclsretur_eyeData, jmgazeData, jobjEyeData);
-			cout << "log from JNI cpp: Return object to Java" << endl;
+			if (isStopCollectData == TRUE)
+			{
+				cout << "log from JNI cpp: Data collection stopped" << endl;
+				break;
+			}
 		}
 		cout << endl;
 	}
@@ -223,5 +222,16 @@ JNIEXPORT jint JNICALL Java_eyegaze_jni_EyeGazeJNI_VerifyFixation
 		return fixtionResult;
 	}
 	return 0;
+}
+
+/*
+* Class:     eyegaze_jni_EyeGazeJNI
+* Method:    StopDataCollection
+* Signature: ()V
+*/
+JNIEXPORT void JNICALL Java_eyegaze_jni_EyeGazeJNI_StopDataCollection
+(JNIEnv *env, jobject)
+{
+	isStopCollectData = TRUE;
 }
 

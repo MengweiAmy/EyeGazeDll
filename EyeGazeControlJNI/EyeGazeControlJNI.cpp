@@ -137,7 +137,7 @@ void CEyeGazeControlJNI::startMonitorData()
 			/* 	If the gazepoint was tracked this sample, 									 */
 			if (stEgControl.pstEgData->bGazeVectorFound == TRUE)
 			{
-				cout << "log from Gaze control cpp: Getting eye data and prepare to pass to Java" << endl;
+				//cout << "log from Gaze control cpp: Getting eye data and prepare to pass to Java" << endl;
 				/* 		Record the raw gazepoint data:												 */
 				stRawEyeGazeData[i].iIGaze = stEgControl.pstEgData->iIGaze - iWindowHorzOffset;
 				stRawEyeGazeData[i].iJGaze = stEgControl.pstEgData->iJGaze - iWindowVertOffset;
@@ -146,9 +146,9 @@ void CEyeGazeControlJNI::startMonitorData()
 				stRawEyeGazeData[i].fYEyeballOffsetMm = stEgControl.pstEgData->fYEyeballOffsetMm;
 				stRawEyeGazeData[i].fFocusRangeOffsetMm = stEgControl.pstEgData->fFocusRangeOffsetMm;
 				stRawEyeGazeData[i].fFocusRangeImageTime = stEgControl.pstEgData->fFocusRangeImageTime;
-				cout << "log from Gaze control cpp: fPupilRadiusMm" << stEgControl.pstEgData->fPupilRadiusMm * 2 << endl;
-				cout << "log from Gaze control cpp: iIGaze" << stEgControl.pstEgData->iJGaze << endl;
-				cout << "log from Gaze control cpp:Current data size is: "<< i << endl;
+				//cout << "log from Gaze control cpp: fPupilRadiusMm" << stEgControl.pstEgData->fPupilRadiusMm * 2 << endl;
+				//cout << "log from Gaze control cpp: iIGaze" << stEgControl.pstEgData->iJGaze << endl;
+				//cout << "log from Gaze control cpp:Current data size is: "<< i << endl;
 			}
 			/* 	Otherwise, if the gazepoint was not tracked this sample, 				 */
 			else
@@ -190,7 +190,7 @@ _stEgData CEyeGazeControlJNI::getEyeData()
 	/* 	If the gazepoint was tracked this sample, 									 */
 	if (stEgControl.pstEgData->bGazeVectorFound == TRUE)
 	{
-		cout << "log from Gaze control cpp: Getting eye data and prepare to pass to Java" << endl;
+		//cout << "log from Gaze control cpp: Getting eye data and prepare to pass to Java" << endl;
 		/* 		Record the raw gazepoint data:												 */
 		stRawEyeGazeData.iIGaze = stEgControl.pstEgData->iIGaze - iWindowHorzOffset;
 		stRawEyeGazeData.iJGaze = stEgControl.pstEgData->iJGaze - iWindowVertOffset;
@@ -199,8 +199,8 @@ _stEgData CEyeGazeControlJNI::getEyeData()
 		stRawEyeGazeData.fYEyeballOffsetMm = stEgControl.pstEgData->fYEyeballOffsetMm;
 		stRawEyeGazeData.fFocusRangeOffsetMm = stEgControl.pstEgData->fFocusRangeOffsetMm;
 		stRawEyeGazeData.fFocusRangeImageTime = stEgControl.pstEgData->fFocusRangeImageTime;
-		cout << "log from Gaze control cpp: fPupilRadiusMm" << stEgControl.pstEgData->fPupilRadiusMm * 2 << endl;
-		cout << "log from Gaze control cpp: iIGaze" << stEgControl.pstEgData->iJGaze << endl;
+		//cout << "log from Gaze control cpp: fPupilRadiusMm" << stEgControl.pstEgData->fPupilRadiusMm * 2 << endl;
+		//cout << "log from Gaze control cpp: iIGaze" << stEgControl.pstEgData->iJGaze << endl;
 	}
 	/* 	Otherwise, if the gazepoint was not tracked this sample, 				 */
 	else
