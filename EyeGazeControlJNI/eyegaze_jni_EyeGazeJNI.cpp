@@ -9,6 +9,7 @@ using namespace std;
 CEyeGazeControlJNI eyeGaze;
 
 _stEgData stLogGazepoint[5000];
+int i = 0;
 
 /*
 * Class:     eyegaze_jni_EyeGazeJNI
@@ -43,49 +44,76 @@ JNIEXPORT jint JNICALL Java_eyegaze_jni_EyeGazeJNI_Calibrate
 (JNIEnv *, jobject)
 {
 	eyeGaze.calibrateDevice();
+	/*
+		retrieve data after calibrate
+	*/
+	//eyeGaze.startMonitorData();
 	return 0;
 }
 
-/*
-* Class:     eyegaze_jni_EyeGazeJNI
-* Method:    getEyeGazeData
-* Signature: ()[Leyegaze/jni/EyeGazeData;
-*/
-JNIEXPORT jobjectArray JNICALL Java_eyegaze_jni_EyeGazeJNI_getEyeGazeData
-(JNIEnv *env, jobject)
+
+void __stdcall OnDownloadFinished(const char* pURL, bool bOK)
 {
-	int num = 36000;
-	jclass eyeData = env->FindClass("eyegaze/jni/EyeGazeData");
-	_stRawGazepoint* data = eyeGaze.getEyeData();
+	cout << "OnDownloadFinished, URL:" << pURL << "    status:" << bOK << endl;
+}
 
-	jmethodID jeyeData = env->GetMethodID(eyeData, "<init>", "()V");
-	jfieldID jgazeVectorFound = env->GetFieldID(eyeData, "gazeVectorFound", "Z");
-	jfieldID jigaze = env->GetFieldID(eyeData, "iIGaze", "I");
-	jfieldID jjgaze = env->GetFieldID(eyeData, "iJGaze", "I");
-	jfieldID jpupilRadius = env->GetFieldID(eyeData, "pupilRadiusMm", "F");
-	jfieldID jfXEyeballOffsetMm = env->GetFieldID(eyeData, "fXEyeballOffsetMm", "F");
-	jfieldID jfYEyeballOffsetMm = env->GetFieldID(eyeData, "fYEyeballOffsetMm", "F");
-	jfieldID jfoucsRangeOffsetMm = env->GetFieldID(eyeData, "foucsRangeOffsetMm", "F");
-	jfieldID jfLengExtOffsetMm = env->GetFieldID(eyeData, "fLengExtOffsetMm", "F");
-	jobjectArray jobjectEyeData = env->NewObjectArray(num, eyeData, 0);
+/*
+ * Class:     eyegaze_jni_EyeGazeJNI
+ * Method:    getEyeGazeData
+ * Signature: ()Leyegaze/jni/EyeGazeData;
+ */
+JNIEXPORT jobject JNICALL Java_eyegaze_jni_EyeGazeJNI_getEyeGazeData
+  (JNIEnv *env, jobject) {
+	cout << "log from JNI cpp: Try to get data" << endl;
+	cout << "log from JNI cpp: Call EyeGaze start monitor function" << endl;
+	
+	// try to find the object class
+	jclass jclseyeData = env->FindClass("eyegaze/jni/EyeGazeData");  
 
-	int arraySize = sizeof(data) / sizeof(data[0]);
-	for (int i = 0; i < arraySize; i++)
-	{
-		jobject jobjEyeData = env->NewObject(eyeData, jeyeData);
-		env->SetIntField(jobjEyeData, jigaze, data[i].iXGazeWindowPix);
-		env->SetIntField(jobjEyeData, jjgaze,data[i].iYGazeWindowPix);
-		env->SetFloatField(jobjEyeData, jpupilRadius,data[i].fPupilDiamMm);
-		env->SetFloatField(jobjEyeData, jfXEyeballOffsetMm, data[i].fXEyeballMm);
-		env->SetFloatField(jobjEyeData, jfYEyeballOffsetMm, data[i].fYEyeballMm);
-		env->SetFloatField(jobjEyeData, jfoucsRangeOffsetMm, data[i].fFocusRangeMm);
-		env->SetFloatField(jobjEyeData, jfLengExtOffsetMm, data[i].fFocusOffsetMm);
-
-		env->SetObjectArrayElement(jobjectEyeData, i, jobjEyeData);
-		env->DeleteLocalRef(jobjEyeData);
+	// try to find the call back class and callback method
+	jclass jclsretur_eyeData = env->FindClass("eyegaze/jni/EyeGazeRetrieveData");  
+	jmethodID jmgazeData = env->GetStaticMethodID(jclsretur_eyeData, "receivegazedaata", "(Leyegaze/jni/EyeGazeData;)V");
+	if (jmgazeData == nullptr) {
+		cerr << "ERROR: method it receivegazedaata not found !" << endl;
 	}
+	else {
+		cout << "Class MyTest found" << endl;
+		while (i < 36000) {
+			jmethodID jeyeData = env->GetMethodID(jclseyeData, "<init>", "()V");
+			jfieldID jgazeVectorFound = env->GetFieldID(jclseyeData, "gazeVectorFound", "Z");
+			jfieldID jigaze = env->GetFieldID(jclseyeData, "iIGaze", "I");
+			jfieldID jjgaze = env->GetFieldID(jclseyeData, "iJGaze", "I");
+			jfieldID jpupilRadius = env->GetFieldID(jclseyeData, "pupilRadiusMm", "F");
+			jfieldID jfXEyeballOffsetMm = env->GetFieldID(jclseyeData, "fXEyeballOffsetMm", "F");
+			jfieldID jfYEyeballOffsetMm = env->GetFieldID(jclseyeData, "fYEyeballOffsetMm", "F");
+			jfieldID jfoucsRangeOffsetMm = env->GetFieldID(jclseyeData, "foucsRangeOffsetMm", "F");
+			jfieldID jfLengExtOffsetMm = env->GetFieldID(jclseyeData, "fLengExtOffsetMm", "F");
 
-	return jobjectEyeData;
+			//_stEgData data = eyeGaze.getEyeData();
+
+			jobject jobjEyeData = env->NewObject(jclseyeData, jeyeData);
+			//env->SetIntField(jobjEyeData, jigaze, data.iIGaze);
+			//env->SetIntField(jobjEyeData, jjgaze, data.iJGaze);
+			//env->SetFloatField(jobjEyeData, jpupilRadius, data.fPupilRadiusMm);
+			//env->SetFloatField(jobjEyeData, jfXEyeballOffsetMm, data.fXEyeballOffsetMm);
+			//env->SetFloatField(jobjEyeData, jfYEyeballOffsetMm, data.fYEyeballOffsetMm);
+			//env->SetFloatField(jobjEyeData, jfoucsRangeOffsetMm, data.fFocusRangeOffsetMm);
+			//env->SetFloatField(jobjEyeData, jfLengExtOffsetMm, data.fFocusRangeOffsetMm);
+
+			env->SetIntField(jobjEyeData, jigaze, 100);
+			env->SetIntField(jobjEyeData, jjgaze, 500);
+			env->SetFloatField(jobjEyeData, jpupilRadius, 3.16F);
+			env->SetFloatField(jobjEyeData, jfXEyeballOffsetMm, -1.6F);
+			env->SetFloatField(jobjEyeData, jfYEyeballOffsetMm, 11.1F);
+			env->SetFloatField(jobjEyeData, jfoucsRangeOffsetMm, 683.3F);
+			env->SetFloatField(jobjEyeData, jfLengExtOffsetMm, 0.0F);
+
+			env->CallStaticVoidMethod(jclsretur_eyeData, jmgazeData, jobjEyeData);
+			cout << "log from JNI cpp: Return object to Java" << endl;
+		}
+		cout << endl;
+	}
+	return NULL;
 }
 
 /*

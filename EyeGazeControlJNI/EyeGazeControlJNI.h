@@ -12,6 +12,7 @@
 #define EYEGAZECONTROLJNI_API __declspec(dllimport)
 #endif
 
+typedef void(__stdcall *DownloadCallback)(const char* pURL, bool bOK);
 
 struct _stRawGazepoint        /* data for a single raw gazepoint, i.e. the  */
 							  /*   gazepoint for a single camera sample 	 */
@@ -39,11 +40,13 @@ public:
 	int initDevice();
 	int shutDownDevice();
 	void calibrateDevice();
-	_stRawGazepoint* getEyeData();
+	void startMonitorData();
+	_stEgData getEyeData();
 	int startLogging();
 	int stopLogging();
 	_stEgControl getControlData();
 	int egDetectFixtion(_stEgData *rawdata,int size);
+	void DownloadFile(const char* pURL, DownloadCallback callback);
 	// TODO: add your methods here.
 private:
 	void AddFixation(int *iLastFixCollected, int iFixStartSample,

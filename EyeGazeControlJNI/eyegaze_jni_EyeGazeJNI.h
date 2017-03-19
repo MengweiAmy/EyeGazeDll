@@ -34,9 +34,9 @@ JNIEXPORT jint JNICALL Java_eyegaze_jni_EyeGazeJNI_Calibrate
 /*
  * Class:     eyegaze_jni_EyeGazeJNI
  * Method:    getEyeGazeData
- * Signature: ()[Leyegaze/jni/EyeGazeData;
+ * Signature: ()Leyegaze/jni/EyeGazeData;
  */
-JNIEXPORT jobjectArray JNICALL Java_eyegaze_jni_EyeGazeJNI_getEyeGazeData
+JNIEXPORT jobject JNICALL Java_eyegaze_jni_EyeGazeJNI_getEyeGazeData
   (JNIEnv *, jobject);
 
 /*

@@ -31,6 +31,8 @@ struct _stFixPoint            /* data for a single gaze fixation point      */
 /* GLOBAL VARIABLES																			 */
 
 struct _stRawGazepoint stRawGazepoint[36000];
+
+struct _stEgData stRawEyeGazeData[36000];
 /* array of raw gazepoint structures		 */
 struct _stFixPoint stFixPoint[3600];
 
@@ -109,14 +111,14 @@ void CEyeGazeControlJNI::calibrateDevice()
 	return;
 }
 
-_stRawGazepoint* CEyeGazeControlJNI::getEyeData()
-{/* Collect the data samples.																 */
- /* 	Stop collecting data if the user requests it.								 */
+void CEyeGazeControlJNI::startMonitorData()
+{
+	int i = 0;
 	while (stEgControl.bTrackingActive == TRUE)
 	{
-		int i = 0;
+		cout << "log from Gaze control cpp: Enter the monitor data" << endl;
 		/* - - - - - - - - - - - - -	Track Gazepoint - - - - - - - - - - - - - - - */
-		if (i >= 36000) 
+		if (i >= 36000)
 		{
 			break;
 		}
@@ -126,35 +128,39 @@ _stRawGazepoint* CEyeGazeControlJNI::getEyeData()
 			EgGetData(&stEgControl);
 
 			/* 	Record whether the gaze was found.												 */
-			stRawGazepoint[i].bGazeTracked = stEgControl.pstEgData->bGazeVectorFound;
+			stRawEyeGazeData[i].bGazeVectorFound = stEgControl.pstEgData->bGazeVectorFound;
 
 			/* 	Originally assume the point is not associated with a fixation. 		 */
-			stRawGazepoint[i].iFixIndex = -1;
+			//stRawGazepoint[i].iFixIndex = -1;
 
 
 			/* 	If the gazepoint was tracked this sample, 									 */
 			if (stEgControl.pstEgData->bGazeVectorFound == TRUE)
 			{
+				cout << "log from Gaze control cpp: Getting eye data and prepare to pass to Java" << endl;
 				/* 		Record the raw gazepoint data:												 */
-				stRawGazepoint[i].iXGazeWindowPix = stEgControl.pstEgData->iIGaze - iWindowHorzOffset;
-				stRawGazepoint[i].iYGazeWindowPix = stEgControl.pstEgData->iJGaze - iWindowVertOffset;
-				stRawGazepoint[i].fPupilDiamMm = stEgControl.pstEgData->fPupilRadiusMm * 2;
-				stRawGazepoint[i].fXEyeballMm = stEgControl.pstEgData->fXEyeballOffsetMm;
-				stRawGazepoint[i].fYEyeballMm = stEgControl.pstEgData->fYEyeballOffsetMm;
-				stRawGazepoint[i].fFocusOffsetMm = stEgControl.pstEgData->fFocusRangeOffsetMm;
-				stRawGazepoint[i].fFocusRangeMm = stEgControl.pstEgData->fFocusRangeImageTime;
+				stRawEyeGazeData[i].iIGaze = stEgControl.pstEgData->iIGaze - iWindowHorzOffset;
+				stRawEyeGazeData[i].iJGaze = stEgControl.pstEgData->iJGaze - iWindowVertOffset;
+				stRawEyeGazeData[i].fPupilRadiusMm = stEgControl.pstEgData->fPupilRadiusMm * 2;
+				stRawEyeGazeData[i].fXEyeballOffsetMm = stEgControl.pstEgData->fXEyeballOffsetMm;
+				stRawEyeGazeData[i].fYEyeballOffsetMm = stEgControl.pstEgData->fYEyeballOffsetMm;
+				stRawEyeGazeData[i].fFocusRangeOffsetMm = stEgControl.pstEgData->fFocusRangeOffsetMm;
+				stRawEyeGazeData[i].fFocusRangeImageTime = stEgControl.pstEgData->fFocusRangeImageTime;
+				cout << "log from Gaze control cpp: fPupilRadiusMm" << stEgControl.pstEgData->fPupilRadiusMm * 2 << endl;
+				cout << "log from Gaze control cpp: iIGaze" << stEgControl.pstEgData->iJGaze << endl;
+				cout << "log from Gaze control cpp:Current data size is: "<< i << endl;
 			}
 			/* 	Otherwise, if the gazepoint was not tracked this sample, 				 */
 			else
 			{
 				/* 		Record zeros:																		 */
-				stRawGazepoint[i].iXGazeWindowPix = 0;
-				stRawGazepoint[i].iYGazeWindowPix = 0;
-				stRawGazepoint[i].fPupilDiamMm = 0.0F;
-				stRawGazepoint[i].fXEyeballMm = 0.0F;
-				stRawGazepoint[i].fYEyeballMm = 0.0F;
-				stRawGazepoint[i].fFocusOffsetMm = 0.0F;
-				stRawGazepoint[i].fFocusRangeMm = stEgControl.pstEgData->fFocusRangeImageTime;
+				stRawEyeGazeData[i].iIGaze = 0;
+				stRawEyeGazeData[i].iJGaze = 0;
+				stRawEyeGazeData[i].fPupilRadiusMm = 0.0F;
+				stRawEyeGazeData[i].fXEyeballOffsetMm = 0.0F;
+				stRawEyeGazeData[i].fYEyeballOffsetMm = 0.0F;
+				stRawEyeGazeData[i].fFocusRangeOffsetMm = 0.0F;
+				stRawEyeGazeData[i].fFocusRangeImageTime = stEgControl.pstEgData->fFocusRangeImageTime;
 			}
 			/*----------------------- End Data Collection Loop -------------------------*/
 
@@ -163,8 +169,54 @@ _stRawGazepoint* CEyeGazeControlJNI::getEyeData()
 			i++;
 		}
 	}
-	return stRawGazepoint;
 }
+
+_stEgData CEyeGazeControlJNI::getEyeData()
+{/* Collect the data samples.																 */
+ /* 	Stop collecting data if the user requests it.								 */
+ /* 	Track the user gazepoint.
+ */
+
+	_stEgData stRawEyeGazeData;
+	EgGetData(&stEgControl);
+
+	/* 	Record whether the gaze was found.												 */
+	stRawEyeGazeData.bGazeVectorFound = stEgControl.pstEgData->bGazeVectorFound;
+
+	/* 	Originally assume the point is not associated with a fixation. 		 */
+	//stRawGazepoint[i].iFixIndex = -1;
+
+
+	/* 	If the gazepoint was tracked this sample, 									 */
+	if (stEgControl.pstEgData->bGazeVectorFound == TRUE)
+	{
+		cout << "log from Gaze control cpp: Getting eye data and prepare to pass to Java" << endl;
+		/* 		Record the raw gazepoint data:												 */
+		stRawEyeGazeData.iIGaze = stEgControl.pstEgData->iIGaze - iWindowHorzOffset;
+		stRawEyeGazeData.iJGaze = stEgControl.pstEgData->iJGaze - iWindowVertOffset;
+		stRawEyeGazeData.fPupilRadiusMm = stEgControl.pstEgData->fPupilRadiusMm * 2;
+		stRawEyeGazeData.fXEyeballOffsetMm = stEgControl.pstEgData->fXEyeballOffsetMm;
+		stRawEyeGazeData.fYEyeballOffsetMm = stEgControl.pstEgData->fYEyeballOffsetMm;
+		stRawEyeGazeData.fFocusRangeOffsetMm = stEgControl.pstEgData->fFocusRangeOffsetMm;
+		stRawEyeGazeData.fFocusRangeImageTime = stEgControl.pstEgData->fFocusRangeImageTime;
+		cout << "log from Gaze control cpp: fPupilRadiusMm" << stEgControl.pstEgData->fPupilRadiusMm * 2 << endl;
+		cout << "log from Gaze control cpp: iIGaze" << stEgControl.pstEgData->iJGaze << endl;
+	}
+	/* 	Otherwise, if the gazepoint was not tracked this sample, 				 */
+	else
+	{
+		/* 		Record zeros:																		 */
+		stRawEyeGazeData.iIGaze = 0;
+		stRawEyeGazeData.iJGaze = 0;
+		stRawEyeGazeData.fPupilRadiusMm = 0.0F;
+		stRawEyeGazeData.fXEyeballOffsetMm = 0.0F;
+		stRawEyeGazeData.fYEyeballOffsetMm = 0.0F;
+		stRawEyeGazeData.fFocusRangeOffsetMm = 0.0F;
+		stRawEyeGazeData.fFocusRangeImageTime = stEgControl.pstEgData->fFocusRangeImageTime;
+	}
+	return stRawEyeGazeData;
+}
+
 //Before start logging, should open the log file first
 //Then write the column header in the log file
 //Finally call the start log function
@@ -326,6 +378,12 @@ int CEyeGazeControlJNI::egDetectFixtion(_stEgData *rawdata,int size)
 	/* Write the trace data file. 															 */
 	WriteTraceDataFile(TEXT("fixation.dat"));
 	return iEyeMotionState;
+}
+
+void CEyeGazeControlJNI::DownloadFile(const char * pURL, DownloadCallback callback)
+{
+	cout << "downloading: " << pURL << "" << endl;
+	callback(pURL, true);
 }
 
 /* This function adds a fixation to the fixation data array.					 */

@@ -1,7 +1,3 @@
-﻿  EyeGazeControlJNI.cpp
-c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(238): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(249): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(296): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(304): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+﻿  eyegaze_jni_EyeGazeJNI.cpp
   EyeGazeControlJNI.vcxproj -> C:\Users\EYEGAZE 2.3 i7\Documents\GitHub\EyeGazeDll\Debug\EyeGazeControlJNI.dll
   EyeGazeControlJNI.vcxproj -> C:\Users\EYEGAZE 2.3 i7\Documents\GitHub\EyeGazeDll\Debug\EyeGazeControlJNI.pdb (Full PDB)
