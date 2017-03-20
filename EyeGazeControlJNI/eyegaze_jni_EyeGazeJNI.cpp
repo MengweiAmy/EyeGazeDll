@@ -8,7 +8,7 @@ using namespace std;
 
 CEyeGazeControlJNI eyeGaze;
 
-_stEgData stLogGazepoint[5000];
+_stEgData stLogGazepoint[36000];
 int i = 0;// calulate the size of eyegaze data when receive gaze data
 
 //The sign that stop call EgGetData function
@@ -52,12 +52,6 @@ JNIEXPORT jint JNICALL Java_eyegaze_jni_EyeGazeJNI_Calibrate
 	*/
 	//eyeGaze.startMonitorData();
 	return 0;
-}
-
-
-void __stdcall OnDownloadFinished(const char* pURL, bool bOK)
-{
-	cout << "OnDownloadFinished, URL:" << pURL << "    status:" << bOK << endl;
 }
 
 /*
