@@ -2,3 +2,11 @@
 /Debug/
 *.dll
 *.lib
+*tver.h
+*afx.h
+*def.h
+*upt.h
+*md.h
+*func.h
+*in.h
+*nc.cpp
