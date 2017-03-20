@@ -1,3 +1,4 @@
 *.VC.opendb
 /Debug/
 *.dll
+*.lib
