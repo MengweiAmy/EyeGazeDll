@@ -371,7 +371,6 @@ int CEyeGazeControlJNI::egDetectFixtion(_stEgData *rawdata,int size)
 		/*  If a completed fixation has just been detected,  */
 		if (iEyeMotionState == FIXATION_COMPLETED)
 		{
-			cout << i << "First detect fixation " << iEyeMotionState << endl;
 			/* 	Compute the starting sample for the fixation. */
 			iFixStartSample = i - (iFixDurationDelayed - 1)
 				- iMinFixSamples;
