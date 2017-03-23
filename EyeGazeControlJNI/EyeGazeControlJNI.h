@@ -46,7 +46,7 @@ public:
 	int stopLogging();
 	_stEgControl getControlData();
 	int egDetectFixtion(_stEgData *rawdata,int size);
-	void DownloadFile(const char* pURL, DownloadCallback callback);
+	int egDisplayEyeImages();
 	// TODO: add your methods here.
 private:
 	void AddFixation(int *iLastFixCollected, int iFixStartSample,

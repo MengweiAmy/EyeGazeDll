@@ -71,6 +71,14 @@ JNIEXPORT jint JNICALL Java_eyegaze_jni_EyeGazeJNI_VerifyFixation
 JNIEXPORT void JNICALL Java_eyegaze_jni_EyeGazeJNI_StopDataCollection
   (JNIEnv *, jobject);
 
+/*
+ * Class:     eyegaze_jni_EyeGazeJNI
+ * Method:    EyeGazeImageDisplay
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_eyegaze_jni_EyeGazeJNI_EyeGazeImageDisplay
+  (JNIEnv *, jobject);
+
 #ifdef __cplusplus
 }
 #endif

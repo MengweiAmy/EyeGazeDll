@@ -77,7 +77,7 @@ JNIEXPORT jobject JNICALL Java_eyegaze_jni_EyeGazeJNI_getEyeGazeData
 		while (i < 36000) {
 
 			jmethodID jeyeData = env->GetMethodID(jclseyeData, "<init>", "()V");
-			jfieldID jgazeVectorFound = env->GetFieldID(jclseyeData, "gazeVectorFound", "Z");
+			jfieldID jgazeVectorFound = env->GetFieldID(jclseyeData, "gazeVectorFound", "I");
 			jfieldID jigaze = env->GetFieldID(jclseyeData, "iIGaze", "I");
 			jfieldID jjgaze = env->GetFieldID(jclseyeData, "iJGaze", "I");
 			jfieldID jpupilRadius = env->GetFieldID(jclseyeData, "pupilRadiusMm", "F");
@@ -85,10 +85,13 @@ JNIEXPORT jobject JNICALL Java_eyegaze_jni_EyeGazeJNI_getEyeGazeData
 			jfieldID jfYEyeballOffsetMm = env->GetFieldID(jclseyeData, "fYEyeballOffsetMm", "F");
 			jfieldID jfoucsRangeOffsetMm = env->GetFieldID(jclseyeData, "foucsRangeOffsetMm", "F");
 			jfieldID jfLengExtOffsetMm = env->GetFieldID(jclseyeData, "fLengExtOffsetMm", "F");
+			jfieldID jdgazeTime = env->GetFieldID(jclseyeData, "gazeTimeSec", "D");
+			jfieldID jdReportTime = env->GetFieldID(jclseyeData, "reportTimeSec", "D");
 
 			_stEgData data = eyeGaze.getEyeData();
 
 			jobject jobjEyeData = env->NewObject(jclseyeData, jeyeData);
+			env->SetIntField(jobjEyeData, jgazeVectorFound, data.bGazeVectorFound);
 			env->SetIntField(jobjEyeData, jigaze, data.iIGaze);
 			env->SetIntField(jobjEyeData, jjgaze, data.iJGaze);
 			env->SetFloatField(jobjEyeData, jpupilRadius, data.fPupilRadiusMm);
@@ -96,6 +99,8 @@ JNIEXPORT jobject JNICALL Java_eyegaze_jni_EyeGazeJNI_getEyeGazeData
 			env->SetFloatField(jobjEyeData, jfYEyeballOffsetMm, data.fYEyeballOffsetMm);
 			env->SetFloatField(jobjEyeData, jfoucsRangeOffsetMm, data.fFocusRangeOffsetMm);
 			env->SetFloatField(jobjEyeData, jfLengExtOffsetMm, data.fFocusRangeOffsetMm);
+			env->SetDoubleField(jobjEyeData, jdgazeTime, data.dGazeTimeSec);
+			env->SetDoubleField(jobjEyeData, jdReportTime, data.dReportTimeSec);
 
 			env->CallStaticVoidMethod(jclsretur_eyeData, jmgazeData, jobjEyeData);
 			if (isStopCollectData == TRUE)
@@ -227,5 +232,16 @@ JNIEXPORT void JNICALL Java_eyegaze_jni_EyeGazeJNI_StopDataCollection
 (JNIEnv *env, jobject)
 {
 	isStopCollectData = TRUE;
+}
+
+/*
+* Class:     eyegaze_jni_EyeGazeJNI
+* Method:    EyeGazeImageDisplay
+* Signature: ()V
+*/
+JNIEXPORT void JNICALL Java_eyegaze_jni_EyeGazeJNI_EyeGazeImageDisplay
+(JNIEnv *env, jobject)
+{
+	eyeGaze.egDisplayEyeImages();
 }
 

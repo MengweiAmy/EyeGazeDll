@@ -38,6 +38,7 @@ struct _stFixPoint stFixPoint[3600];
 
 static struct _stEgControl stEgControl;
 struct _stEgData stEgData;
+struct _stEyeImageInfo stEyeImageInfo;
 
 float fMinFixMs = 100.0f;
 float iMinFixSamples = 0;
@@ -56,6 +57,10 @@ int iWindowVertOffset = 0;
 
 int iScreenWidthPix;
 int iScreenHeightPix;
+
+/*===========Parameters for Image display==============*/
+HDC		hdc;
+
 
 // This is an example of an exported variable
 EYEGAZECONTROLJNI_API int nEyeGazeControlJNI=0;
@@ -93,8 +98,13 @@ int CEyeGazeControlJNI::initDevice()
 	stEgControl.iCommType = EG_COMM_TYPE_LOCAL;
 	stEgControl.fHorzPixPerMm = 10.246F;
 	stEgControl.iSamplePerSec = 60;
+
+	/* Initialise the device */
 	int result = EgInit(&stEgControl);
 	stEgControl.bTrackingActive = TRUE;
+
+	/* Initialise the image function*/
+	EgEyeImageInit(&stEyeImageInfo, 4);
 	return result;
 }
 
@@ -180,6 +190,13 @@ _stEgData CEyeGazeControlJNI::getEyeData()
 	_stEgData stRawEyeGazeData;
 	EgGetData(&stEgControl);
 
+	EgEyeImageDisplay(0,
+		stEgControl.iScreenWidthPix - stEyeImageInfo.iWidth,
+		0,
+		stEyeImageInfo.iWidth,
+		stEyeImageInfo.iHeight,
+		hdc);
+
 	/* 	Record whether the gaze was found.												 */
 	stRawEyeGazeData.bGazeVectorFound = stEgControl.pstEgData->bGazeVectorFound;
 
@@ -192,6 +209,7 @@ _stEgData CEyeGazeControlJNI::getEyeData()
 	{
 		//cout << "log from Gaze control cpp: Getting eye data and prepare to pass to Java" << endl;
 		/* 		Record the raw gazepoint data:												 */
+		stRawEyeGazeData.bGazeVectorFound = stEgControl.pstEgData->bGazeVectorFound;
 		stRawEyeGazeData.iIGaze = stEgControl.pstEgData->iIGaze - iWindowHorzOffset;
 		stRawEyeGazeData.iJGaze = stEgControl.pstEgData->iJGaze - iWindowVertOffset;
 		stRawEyeGazeData.fPupilRadiusMm = stEgControl.pstEgData->fPupilRadiusMm * 2;
@@ -199,6 +217,9 @@ _stEgData CEyeGazeControlJNI::getEyeData()
 		stRawEyeGazeData.fYEyeballOffsetMm = stEgControl.pstEgData->fYEyeballOffsetMm;
 		stRawEyeGazeData.fFocusRangeOffsetMm = stEgControl.pstEgData->fFocusRangeOffsetMm;
 		stRawEyeGazeData.fFocusRangeImageTime = stEgControl.pstEgData->fFocusRangeImageTime;
+		stRawEyeGazeData.dGazeTimeSec = stEgControl.pstEgData->dGazeTimeSec;
+		stRawEyeGazeData.dReportTimeSec = stEgControl.pstEgData->dReportTimeSec;
+		stRawEyeGazeData.dAppMarkTimeSec = stEgControl.pstEgData->dAppMarkTimeSec;
 		//cout << "log from Gaze control cpp: fPupilRadiusMm" << stEgControl.pstEgData->fPupilRadiusMm * 2 << endl;
 		//cout << "log from Gaze control cpp: iIGaze" << stEgControl.pstEgData->iJGaze << endl;
 	}
@@ -364,7 +385,6 @@ int CEyeGazeControlJNI::egDetectFixtion(_stEgData *rawdata,int size)
 				ii < iFixStartSample + iFixDurationDelayed; ii++)
 			{
 				stRawGazepoint[ii].iFixIndex = iLastFixCollected;
-				cout << "ii" <<ii << endl;
 			}
 		}
 		/*If the current gaze point is moving,then set the fixation index to -1*/
@@ -380,10 +400,20 @@ int CEyeGazeControlJNI::egDetectFixtion(_stEgData *rawdata,int size)
 	return iEyeMotionState;
 }
 
-void CEyeGazeControlJNI::DownloadFile(const char * pURL, DownloadCallback callback)
+/*  Display the Eye Image on application */
+int CEyeGazeControlJNI::egDisplayEyeImages()
 {
-	cout << "downloading: " << pURL << "" << endl;
-	callback(pURL, true);
+	cout << "log from image function:" << stEgControl.iScreenWidthPix - stEyeImageInfo.iWidth << endl;
+	cout << "log from image function:" << stEyeImageInfo.iWidth << endl;
+	cout << "log from image function:" << stEyeImageInfo.iHeight << endl;
+	EgEyeImageDisplay(0,
+		stEgControl.iScreenWidthPix - stEyeImageInfo.iWidth,
+		0,
+		stEyeImageInfo.iWidth,
+		stEyeImageInfo.iHeight,
+		hdc);
+
+	return 0;
 }
 
 /* This function adds a fixation to the fixation data array.					 */
@@ -451,7 +481,7 @@ void CEyeGazeControlJNI::WriteTraceDataFile(wchar_t * pchTraceDataFileName)
 	/* Print the raw data for the gazepoint sample. 									 */
 	for (i = 0; i <= iLastSampleCollected; i++)
 	{
-		fwprintf(fp_trace_file, TEXT("%6i %10i %8i %6i %6.2f %6.1f %5.1f %5.1f %7.1f %4i\n"),
+		fwprintf(fp_trace_file, TEXT("%5i %8i %8i %6i %8.1f %6.1f %6.2f %6f %8f %4i\n"),
 			i,
 			stRawGazepoint[i].bGazeTracked,
 			stRawGazepoint[i].iXGazeWindowPix,
@@ -478,7 +508,7 @@ void CEyeGazeControlJNI::WriteTraceDataFile(wchar_t * pchTraceDataFileName)
 	/* Print the fixation data points.														 */
 	for (i = 0; i <= iLastFixCollected; i++)
 	{
-		fwprintf(fp_fixation_file, TEXT("%3i %6i %6i %5i %6i %6i\n"),
+		fwprintf(fp_fixation_file, TEXT("%5i %8i %5i %6i %8i %8i\n"),
 			i,
 			stFixPoint[i].iXFixPix,
 			stFixPoint[i].iYFixPix,
