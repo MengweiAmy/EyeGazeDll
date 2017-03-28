@@ -5,6 +5,7 @@
 // EYEGAZECONTROLJNI_API functions as being imported from a DLL, whereas this DLL sees symbols
 // defined with this macro as being exported.
 #include "EgWin.h"
+#include <string>
 
 #ifdef EYEGAZECONTROLJNI_EXPORTS
 #define EYEGAZECONTROLJNI_API __declspec(dllexport)
@@ -31,6 +32,18 @@ struct _stRawGazepoint        /* data for a single raw gazepoint, i.e. the  */
 							   /*   the focus plane (mm)							 */
 	int   iFixIndex;           /* index of the fixation that this point is   */
 							   /*   in, -1 if not part of a fixation			 */
+	double dGazeTimeSec;
+	double dReportTimeSec;
+};
+
+struct _stClickData        /* data for a clicked button  */
+{
+	int index;
+	long   lTime;			/* click data in millseconds */
+	std::string	sLetter;		/* letter on the clicked button */
+	float	fSecond;		/*  click data in seconds offset based on the init time */
+	int iXPosition;        /* xPosition of button    */
+	int iYPosition;         /* yPosition of button    */
 };
 
 // This class is exported from the EyeGazeControlJNI.dll
@@ -40,13 +53,13 @@ public:
 	int initDevice();
 	int shutDownDevice();
 	void calibrateDevice();
-	void startMonitorData();
 	_stEgData getEyeData();
 	int startLogging();
 	int stopLogging();
 	_stEgControl getControlData();
 	int egDetectFixtion(_stEgData *rawdata,int size);
 	int egDisplayEyeImages();
+	void writeClickLog(_stClickData *clickarr,int size);
 	// TODO: add your methods here.
 private:
 	void AddFixation(int *iLastFixCollected, int iFixStartSample,

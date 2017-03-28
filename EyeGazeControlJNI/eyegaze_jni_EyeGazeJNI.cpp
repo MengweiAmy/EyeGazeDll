@@ -4,15 +4,43 @@
 #include <stdio.h>
 #include <iostream>
 
+#define _CRT_SECURE_NO_DEPRECATE
+
 using namespace std;
 
 CEyeGazeControlJNI eyeGaze;
 
 _stEgData stLogGazepoint[36000];
+_stClickData stClickData[2000];
 int i = 0;// calulate the size of eyegaze data when receive gaze data
 
 //The sign that stop call EgGetData function
 bool isStopCollectData = FALSE;
+
+void jstringTostring(JNIEnv* env, jstring jstr, string &strData)
+{
+	char* cArray = NULL;
+	jclass clsstring = env->FindClass("java/lang/String");
+	jstring strencode = env->NewStringUTF("utf-8");
+	jmethodID mid = env->GetMethodID(clsstring, "getBytes", "(Ljava/lang/String;)[B");
+	jbyteArray barr = (jbyteArray)env->CallObjectMethod(jstr, mid, strencode);
+	jsize alen = env->GetArrayLength(barr);
+	jbyte* ba = env->GetByteArrayElements(barr, JNI_FALSE);
+	if (alen > 0)
+	{
+		cArray = (char*)malloc(alen + 1);
+		memcpy(cArray, ba, alen);
+		cArray[alen] = 0;
+	}
+	env->ReleaseByteArrayElements(barr, ba, 0);
+	strData = cArray;
+	if (alen > 0)
+	{
+		free(cArray);
+	}
+	env->DeleteLocalRef(strencode);
+	env->DeleteLocalRef(clsstring);
+}
 
 /*
 * Class:     eyegaze_jni_EyeGazeJNI
@@ -35,6 +63,8 @@ JNIEXPORT jint JNICALL Java_eyegaze_jni_EyeGazeJNI_EyeGazeShutDown
 (JNIEnv *env, jobject)
 {
 	jint result = eyeGaze.shutDownDevice();
+	//delete[] stLogGazepoint;
+	//delete[] stClickData;
 	return result;
 }
 
@@ -98,7 +128,7 @@ JNIEXPORT jobject JNICALL Java_eyegaze_jni_EyeGazeJNI_getEyeGazeData
 			env->SetFloatField(jobjEyeData, jfXEyeballOffsetMm, data.fXEyeballOffsetMm);
 			env->SetFloatField(jobjEyeData, jfYEyeballOffsetMm, data.fYEyeballOffsetMm);
 			env->SetFloatField(jobjEyeData, jfoucsRangeOffsetMm, data.fFocusRangeOffsetMm);
-			env->SetFloatField(jobjEyeData, jfLengExtOffsetMm, data.fFocusRangeOffsetMm);
+			env->SetFloatField(jobjEyeData, jfLengExtOffsetMm, data.fLensExtOffsetMm);
 			env->SetDoubleField(jobjEyeData, jdgazeTime, data.dGazeTimeSec);
 			env->SetDoubleField(jobjEyeData, jdReportTime, data.dReportTimeSec);
 
@@ -208,12 +238,13 @@ JNIEXPORT jint JNICALL Java_eyegaze_jni_EyeGazeJNI_VerifyFixation
 				float fYRangeoff = env->GetFloatField(job_egData, jfid_fLengRangOffset);
 				stLogGazepoint[i].fFocusRangeOffsetMm = fYRangeoff;
 
-				//cout << i << "get rawpoint data bGazeVectorFound" << stRawGazepoint[i].bGazeVectorFound << endl;
-				//cout << i << "get rawpoint data iIGaze" << stRawGazepoint[i].iIGaze << endl;
-				//cout << i << "get rawpoint data iJGaze" << stRawGazepoint[i].iJGaze << endl;
-				//cout << i << "get rawpoint data fPupilRadiusMm" << stRawGazepoint[i].fPupilRadiusMm << endl;
-				//cout << i << "get rawpoint data fXEyeBall" << stRawGazepoint[i].fXEyeballOffsetMm << endl;
-				//cout << i << "get rawpoint data fYEyeBall" << stRawGazepoint[i].fYEyeballOffsetMm << endl;
+				jfieldID jfid_dgazetime = env->GetFieldID(jcls_egdata, "gazeTimeSec", "D");
+				double dgazeTime = env->GetDoubleField(job_egData, jfid_dgazetime);
+				stLogGazepoint[i].dGazeTimeSec = dgazeTime;
+
+				jfieldID jfid_dreportTime = env->GetFieldID(jcls_egdata, "reportTimeSec", "D");
+				double dreportTime = env->GetDoubleField(job_egData, jfid_dreportTime);
+				stLogGazepoint[i].dReportTimeSec = dreportTime;
 			}
 		}
 		int fixtionResult = eyeGaze.egDetectFixtion(stLogGazepoint,size);
@@ -243,5 +274,71 @@ JNIEXPORT void JNICALL Java_eyegaze_jni_EyeGazeJNI_EyeGazeImageDisplay
 (JNIEnv *env, jobject)
 {
 	eyeGaze.egDisplayEyeImages();
+}
+
+/*
+* Class:     eyegaze_jni_EyeGazeJNI
+* Method:    WriteClickLog
+* Signature: ([Leyegaze/jni/BtnData;)V
+*/
+JNIEXPORT void JNICALL Java_eyegaze_jni_EyeGazeJNI_WriteClickLog
+(JNIEnv *env, jobject, jobjectArray click_arr)
+{
+	cout << "enter jni function successfully......." << endl;
+	if (click_arr != NULL)
+	{
+		int size = env->GetArrayLength(click_arr);
+		cout << "eye_gazeData size:" <<size << endl;
+		//int fixtionResult = eyeGaze.egDetectFixtion(stRawGazepoint);
+		for (int i = 0; i < size; i++)
+		{
+			jobject job_clickData = (jobject)env->GetObjectArrayElement(click_arr, i);
+			if (job_clickData != NULL)
+			{
+				jclass jcls_clickData = env->GetObjectClass(job_clickData);
+
+				stClickData[i].index = i;
+
+				/* Get current time in millsecond parameter*/
+				jfieldID jfid_time = env->GetFieldID(jcls_clickData, "time", "L");
+				long time = env->GetLongField(job_clickData, jfid_time);
+				stClickData[i].lTime = time;
+				//cout << "time " << time << endl;
+
+				/* Get letter of button parameter*/
+				jfieldID jfidlatter = env->GetFieldID(jcls_clickData, "letter", "Ljava/lang/String;");
+				jstring s_latter = (jstring)env->GetObjectField(job_clickData, jfidlatter);
+				string strData;
+
+				//convert the jstring to string, and then convert to char*
+				if (s_latter != NULL)
+				{
+					int nLen = 0;
+					jstringTostring(env, s_latter, strData);
+				}
+				stClickData[i].sLetter = strData;
+				cout << "latter " << strData << endl;
+
+				/* Get the click time in second parameter*/
+				jfieldID jfid_seco = env->GetFieldID(jcls_clickData, "seconds", "F");
+				float second = env->GetFloatField(job_clickData, jfid_seco);
+				stClickData[i].fSecond = second;
+				//cout << "second " << second << endl;
+
+				/* Get button xposition parameter*/
+				jfieldID jfid_xPos = env->GetFieldID(jcls_clickData, "xPosition", "I");
+				jint xposi = env->GetIntField(job_clickData, jfid_xPos);
+				stClickData[i].iXPosition = xposi;
+				//cout << "iXPosition " << xposi << endl;
+
+				/* Get button yposition parameter*/
+				jfieldID jfid_yPos = env->GetFieldID(jcls_clickData, "yPosition", "I");
+				jint yposi = env->GetIntField(job_clickData, jfid_yPos);
+				stClickData[i].iYPosition = yposi;
+				//cout << "iYPosition " << yposi << endl;
+			}
+		}
+		eyeGaze.writeClickLog(stClickData, size);
+	}
 }
 

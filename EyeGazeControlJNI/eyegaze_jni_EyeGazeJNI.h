@@ -79,6 +79,14 @@ JNIEXPORT void JNICALL Java_eyegaze_jni_EyeGazeJNI_StopDataCollection
 JNIEXPORT void JNICALL Java_eyegaze_jni_EyeGazeJNI_EyeGazeImageDisplay
   (JNIEnv *, jobject);
 
+/*
+ * Class:     eyegaze_jni_EyeGazeJNI
+ * Method:    WriteClickLog
+ * Signature: ([Leyegaze/jni/BtnData;)V
+ */
+JNIEXPORT void JNICALL Java_eyegaze_jni_EyeGazeJNI_WriteClickLog
+  (JNIEnv *, jobject, jobjectArray);
+
 #ifdef __cplusplus
 }
 #endif
