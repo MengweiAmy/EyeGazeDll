@@ -1,10 +1,3 @@
-﻿  EyeGazeControlJNI.cpp
-c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(253): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(264): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(313): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(320): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(411): warning C4477: 'fwprintf' : format string '%s' requires an argument of type 'wchar_t *', but variadic argument 3 has type 'std::string'
-c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(367): warning C4101: 'date_string': unreferenced local variable
-c:\users\eyegaze 2.3 i7\documents\github\eyegazedll\eyegazecontroljni\eyegazecontroljni.cpp(368): warning C4101: 'time_string': unreferenced local variable
+﻿  eyegaze_jni_EyeGazeJNI.cpp
   EyeGazeControlJNI.vcxproj -> C:\Users\EYEGAZE 2.3 i7\Documents\GitHub\EyeGazeDll\Debug\EyeGazeControlJNI.dll
   EyeGazeControlJNI.vcxproj -> C:\Users\EYEGAZE 2.3 i7\Documents\GitHub\EyeGazeDll\Debug\EyeGazeControlJNI.pdb (Full PDB)

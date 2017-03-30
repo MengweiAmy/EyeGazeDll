@@ -359,67 +359,6 @@ int CEyeGazeControlJNI::egDisplayEyeImages()
 	return 0;
 }
 
-void CEyeGazeControlJNI::writeClickLog(_stClickData * clickarr, int size)
-{
-	FILE *fp_click_file; 			  /* trace data output file					 */
-	time_t  lTime;
-	struct  tm	tmToday;
-	wchar_t date_string[21];        /* string for today's date               */
-	wchar_t time_string[21];        /* string for time test was run          */
-	int  i;								  /* general index								 */
-
-										  /* Open the trace file for writing. 													 */
-	_wfopen_s(&fp_click_file, TEXT("click_data.dat"), TEXT("w"));
-	if (fp_click_file == NULL)
-	{
-		wprintf(TEXT("Error opening %s file for writing\n"), TEXT("click_data.dat"));
-		return;
-	}
-
-	/* Get the present date and time.														 */
-	time(&lTime);
-	localtime_s(&tmToday, &lTime);
-
-	cout << "cpp lTime" << lTime << endl;
-	/*swprintf_s(date_string, 20, TEXT("%02i/%02i/%04i"),
-		tmToday.tm_mon + 1,
-		tmToday.tm_mday,
-		tmToday.tm_year + 1900);
-	swprintf_s(time_string, 20, TEXT("%02i:%02i:%02i"),
-		tmToday.tm_hour,
-		tmToday.tm_min,
-		tmToday.tm_sec);
-*/
-	/* - - - - - - - - - - - Write Raw Gazepoint Trace - - - - - - - - - - - - -*/
-	/* Write the header data for the columns. 											 */
-	/*fwprintf(fp_trace_file,
-	TEXT("samp  Eye     Gazepoint  Pupil   Eyeball-Position  Focus   Fix\n")); */
-	fwprintf(fp_click_file,
-		TEXT("Index  TimeInMill  Letter  TimeInSec   XPosition   YPosition\n"));
-	/*fwprintf(fp_trace_file,
-	TEXT("     (t/f)  (pix)  (pix)  (mm)   (mm)  (mm)  (mm)   (mm)      \n\n"));*/
-
-	/* Print the raw data for the gazepoint sample. 									 */
-	cout << "cpp size" << size << endl;
-	for (i = 0; i < size; i++)
-	{
-		cout << i << "clickarr[i].lTim" << clickarr[i].lTime << endl;
-		cout << i << "clickarr[i].iXPosition" << clickarr[i].iXPosition << endl;
-		cout << i << "clickarr[i].fSecond" << clickarr[i].fSecond << endl;
-		cout << i << "clickarr[i].sLetter" << clickarr[i].sLetter << endl;
-		cout << i << "clickarr[i].iYPosition" << clickarr[i].iYPosition << endl;
-		fwprintf(fp_click_file, TEXT("%5i %5d     %s   %6.1f %6i %4i\n"),
-			i,
-			clickarr[i].lTime,
-			clickarr[i].sLetter,
-			clickarr[i].fSecond,
-			clickarr[i].iXPosition,
-			clickarr[i].iYPosition);
-	}
-	/* Close the trace data file. 															 */
-	fclose(fp_click_file);
-}
-
 /* This function adds a fixation to the fixation data array.					 */
 void CEyeGazeControlJNI::AddFixation(int * iLastFixCollected, int iFixStartSample, float fXFix, float fYFix, int iSaccadeDuration, int iFixDuration)
 {

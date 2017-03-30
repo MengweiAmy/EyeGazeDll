@@ -59,7 +59,6 @@ public:
 	_stEgControl getControlData();
 	int egDetectFixtion(_stEgData *rawdata,int size);
 	int egDisplayEyeImages();
-	void writeClickLog(_stClickData *clickarr,int size);
 	// TODO: add your methods here.
 private:
 	void AddFixation(int *iLastFixCollected, int iFixStartSample,
