@@ -13,7 +13,7 @@
 using namespace std;
 
 #define EG_BUFFER_LeN  60;
-#define MAX_GAZEPOINTS 36000;
+#define MAX_GAZEPOINTS 50000
 #define	MAX_FIXATIONS	 3600;
 
 struct _stFixPoint            /* data for a single gaze fixation point      */
@@ -30,9 +30,9 @@ struct _stFixPoint            /* data for a single gaze fixation point      */
 /****************************************************************************/
 /* GLOBAL VARIABLES																			 */
 
-struct _stRawGazepoint stRawGazepoint[36000];
+struct _stRawGazepoint stRawGazepoint[MAX_GAZEPOINTS];
 
-struct _stEgData stRawEyeGazeData[36000];
+struct _stEgData stRawEyeGazeData[MAX_GAZEPOINTS];
 /* array of raw gazepoint structures		 */
 struct _stFixPoint stFixPoint[3600];
 
@@ -46,7 +46,7 @@ float fGazeDeviationThreshMm = 6.35F;
 
 float fCollectionTimeSeconds = 60.0F; /* length of time to collect gazepoint  */  //what
 																				  /*   data (seconds)								 */
-int	iSamplesToCollect = 36000;			/* maximum number of gazepoint data 		 */
+int	iSamplesToCollect = MAX_GAZEPOINTS;			/* maximum number of gazepoint data 		 */
 								/*   samples to collect 						 */
 int	iLastSampleCollected;		/* index of the last gazepoint data sample */
 								/*   actually collected during the test	 */

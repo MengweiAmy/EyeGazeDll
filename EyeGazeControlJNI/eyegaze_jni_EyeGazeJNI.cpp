@@ -5,12 +5,13 @@
 #include <iostream>
 
 #define _CRT_SECURE_NO_DEPRECATE
+#define MAX_POINTS 50000
 
 using namespace std;
 
 CEyeGazeControlJNI eyeGaze;
 
-_stEgData stLogGazepoint[36000];
+_stEgData stLogGazepoint[MAX_POINTS];
 _stClickData stClickData[2000];
 int i = 0;// calulate the size of eyegaze data when receive gaze data
 
@@ -104,7 +105,7 @@ JNIEXPORT jobject JNICALL Java_eyegaze_jni_EyeGazeJNI_getEyeGazeData
 		cerr << "ERROR: method it receivegazedaata not found !" << endl;
 	}
 	else {
-		while (i < 36000) {
+		while (i < MAX_POINTS) {
 
 			jmethodID jeyeData = env->GetMethodID(jclseyeData, "<init>", "()V");
 			jfieldID jgazeVectorFound = env->GetFieldID(jclseyeData, "gazeVectorFound", "I");
